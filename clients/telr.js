@@ -40,9 +40,8 @@ class Telr {
 				if (err) {
 					reject(err);
 				}
-
 				let base64Url = url.replace(new RegExp(`.*?${','}(.*)`), '$1');
-				resolve(Buffer.from(base64Url, 'base64'));
+				resolve({qrCode: Buffer.from(base64Url, 'base64'), url: qrUrl});
 			})
 		});
     }

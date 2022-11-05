@@ -8,7 +8,6 @@ const app = express();
 const urlencodedParser = express.urlencoded({extended: false}); // Data parser
 const bot = new TelegramApi(dotenv.TELEGRAM_BOT_TOKEN, { polling: true });
 const telr = new Telr(dotenv.AUTH_KEY, dotenv.STORE_ID, dotenv.CREATE_QUICKLINK_API);
-
 const inputDataRgx = new RegExp("/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/",);
 
 // Bot logic
@@ -35,8 +34,9 @@ bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (ms
         return {error: `The amount should be separated by a dot, not a comma (${amount.replace(',', '.')})`};
     }
 
-    const qrLink = await telr.createQuickLink([date, amount, name]);
-	await bot.sendPhoto(chatId, qrLink);
+    let qlData = await telr.createQuickLink([date, amount, name]);
+    let opts = {'caption': qlData.url.replace('_', '\\_'), 'parse_mode': 'markdown'}; // The '_' character must be escaped, otherwise there will be an error
+	await bot.sendPhoto(chatId, qlData.qrCode, opts);
 });
 
 // Express server logic
