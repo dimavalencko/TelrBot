@@ -2,6 +2,7 @@ const TelegramApi = require('node-telegram-bot-api');
 const express = require('express');
 const dotenv = require('dotenv').config().parsed;
 const Telr = require('./clients/telr');
+const moment = require('moment');
 
 const app = express();
 const urlencodedParser = express.urlencoded({extended: false}); // Data parser
@@ -21,6 +22,11 @@ bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (ms
     let [date, amount, name] = paymentData;
     date += '.' + new Date().getFullYear();
     
+    if(!moment(date, 'DD.MM.YYYY', true).isValid()){
+        console.log('The entered date is not valid', date);
+        return await bot.sendMessage(chatId, `Ведённая дата (${date}) не существует. Проверьте правильность даты и повторите попытку снова!`);
+    }
+    console.log('Date is valid')
     // For a negative payment amount
     if(+amount < 0){ 
         return {error: 'The amount cannot be less than 0!'};
