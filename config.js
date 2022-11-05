@@ -3,16 +3,7 @@ const password = '25120301Exs';
 const authKey = 'ztTK^T94m3-JX6Xh';
 const storeId = '26744';
 
-const authorizationAddr = 'https://secure.telr.com/merchant/index.html';
 const createQlAddr = 'https://secure.telr.com/gateway/api_quicklink.json';
-
-// Data for authorization
-let authFormData = new FormData();
-authFormData.append('brand', 'telr');
-authFormData.append('lang', 'en');
-authFormData.append('username', username);
-authFormData.append('password', password);
-authFormData.append('email_id', '');
 
 // Data for create QuickLink (for https://secure.telr.com/gateway/api_quicklink.json)
 const quickLinksData = {
@@ -63,15 +54,6 @@ const quickLinksData = {
 	}
 }
 
-// Http reqest headers
-const headers = {
-	'Access-Control-Allow-Origin': '*',
-	'Host': 'secure.telr.com',
-	'Accept': '*/*',
-	'Connection': 'keep-alive',
-	'WithCredintails': 'true',
-}
-
 module.exports = Object.freeze({
     // Telegram settings
     botToken: '5731903913:AAFJ6eM0_GJjeMzCHAdM6mRGdxaN1DjSgr8',
@@ -83,8 +65,6 @@ module.exports = Object.freeze({
     // Telr auth data
     username: username,
     password: password,
-    authFormData,
-    headers,
     storeId,
     authKey,
 

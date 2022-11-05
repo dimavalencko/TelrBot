@@ -1,16 +1,18 @@
 const TelegramApi = require('node-telegram-bot-api');
 const express = require('express');
-const qrcode = require('qrcode');
-const axios = require('axios');
-const config = require('./config');
+const dotenv = require('dotenv').config().parsed;
+const Telr = require('./clients/telr');
 
 const app = express();
 const urlencodedParser = express.urlencoded({extended: false}); // Data parser
-const bot = new TelegramApi(config.botToken, { polling: true });
+const bot = new TelegramApi(dotenv.TELEGRAM_BOT_TOKEN, { polling: true });
+const telr = new Telr(dotenv.AUTH_KEY, dotenv.STORE_ID, dotenv.CREATE_QUICKLINK_API);
+
+const inputDataRgx = new RegExp("/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/",);
 
 // Bot logic
 bot.onText(/\/start/, async (msg) => {
-    await bot.sendMessage(msg.chat.id, 'Welcome! I`am telegram bot. Please enter the data in the format "date(dd.mm)/amount/name" for information.');
+    await bot.sendMessage(msg.chat.id, 'Привет! Я Телеграм бот для генерации qr-кода для оплаты услуг и товаров. Пожалуйста, введите данные в формате "дата(дд.мм)/сумма/имя" для создания ссылки на оплату.');
 });
 
 bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (msg) => { // For messages with the Date format
@@ -18,40 +20,21 @@ bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (ms
     const paymentData = msg.text.split('/');
     let [date, amount, name] = paymentData;
     date += '.' + new Date().getFullYear();
-		
-		if(+amount < 0){ // For a negative payment amount
-			return await bot.sendMessage(chatId, 'The amount cannot be less than 0!');
-		}
-		else if(amount.includes(',')){
-			return await bot.sendMessage(chatId, `The amount should be separated by a dot, not a comma (${amount.replace(',', '.')})`);
-		}
-		
-		// Copy object from cfg file
-		let _qld = JSON.stringify(config.quickLinksData);
-		let qlData = JSON.parse(_qld);
-
-    qlData.QuickLinkRequest.Details.Desc = `${date} ${name}`;
-    qlData.QuickLinkRequest.Details.Amount = amount;
-    qlData.QuickLinkRequest.Details.FullName = name;
-
-		await axios.post(config.createQlAddr, qlData)
-		.then(async (response) => {
-			let qrUrl = response.data.QuickLinkResponse.URL;
-
-			qrcode.toDataURL(qrUrl, async function (err, url) {
-				let base64Url = url.replace(new RegExp(`.*?${','}(.*)`), '$1')
-				await bot.sendPhoto(chatId, Buffer.from(base64Url, 'base64'));
-			});
-		})
-		.catch(async (error) => {
-			console.log('Error: ', error);
-    	await bot.sendMessage(chatId, 'An error occurred when creating a QR code. Please try again.');
-		});
     
+    // For a negative payment amount
+    if(+amount < 0){ 
+        return {error: 'The amount cannot be less than 0!'};
+    }
+    if(amount.includes(',')){
+        return {error: `The amount should be separated by a dot, not a comma (${amount.replace(',', '.')})`};
+    }
+
+    const qrLink = await telr.createQuickLink([date, amount, name]);
+	await bot.sendPhoto(chatId, qrLink);
 });
 
 // Express server logic
-app.listen(config.port, async () => console.log(`App listening on port ${config.port}`))
+app.listen(dotenv.EXPRESS_PORT, async () => console.log(`App listening on port ${dotenv.EXPRESS_PORT}`))
 
 // Endpoints
 app.post('/', urlencodedParser, (req, res) => {
