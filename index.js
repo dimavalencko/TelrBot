@@ -26,7 +26,7 @@ bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (ms
         console.log('The entered date is not valid', date);
         return await bot.sendMessage(chatId, `Ведённая дата (${date}) не существует. Проверьте правильность даты и повторите попытку снова!`);
     }
-    console.log('Date is valid')
+    
     // For a negative payment amount
     if(+amount < 0){ 
         return {error: 'The amount cannot be less than 0!'};
