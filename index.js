@@ -16,7 +16,7 @@ bot.onText(/\/start/, async (msg) => {
     await bot.sendMessage(msg.chat.id, 'Привет! Я Телеграм бот для генерации qr-кода для оплаты услуг и товаров. Пожалуйста, введите данные в формате "дата(дд.мм)/сумма/имя" для создания ссылки на оплату.');
 });
 
-bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (msg) => { // For messages with the Date format
+bot.onText(RegExp(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g), async (msg) => { // For messages with the Date format
     const chatId = msg.chat.id;
     const paymentData = msg.text.split('/');
     let [date, amount, name] = paymentData;
