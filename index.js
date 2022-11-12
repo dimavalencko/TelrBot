@@ -42,7 +42,7 @@ bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (ms
 
 
 // Endpoints
-app.get('/', urlencodedParser, (request, response) => {
+app.get('/', (request, response) => {
   response.send('Some text')
 })
 
