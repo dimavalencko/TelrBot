@@ -15,23 +15,23 @@ class Telr {
     }
 
     createQuickLink([date, amount, name]) {
-		return new Promise(async (resolve, reject) => {
-			// Copy QuickLinksData object
-			let _qld = JSON.stringify(quickLinksData);
-			let qlData = JSON.parse(_qld);
-		
-			qlData.QuickLinkRequest.Details.Desc = `${date} ${name}`;
-			qlData.QuickLinkRequest.Details.Amount = amount;
-			qlData.QuickLinkRequest.Details.FullName = name;
+      return new Promise(async (resolve, reject) => {
+        // Copy QuickLinksData object
+        let _qld = JSON.stringify(quickLinksData);
+        let qlData = JSON.parse(_qld);
+      
+        qlData.QuickLinkRequest.Details.Desc = `${date} ${name}`;
+        qlData.QuickLinkRequest.Details.Amount = amount;
+        qlData.QuickLinkRequest.Details.FullName = name;
 
-			try {
-				const request = await axios.post(this.#qlApi, qlData);
-				const qrUrl = request.data.QuickLinkResponse.URL;
-				resolve (await this.createQRCode(qrUrl));
-			} catch(e) {
-				reject(e);
-			}
-		});
+        try {
+          const request = await axios.post(this.#qlApi, qlData);
+          const qrUrl = request.data.QuickLinkResponse.URL;
+          resolve (await this.createQRCode(qrUrl));
+        } catch(e) {
+          reject(e);
+        }
+      });
     }
 
 	createQRCode(qrUrl) {
@@ -44,7 +44,7 @@ class Telr {
 				resolve({qrCode: Buffer.from(base64Url, 'base64'), url: qrUrl});
 			})
 		});
-    }
+  }
 }
 
 const quickLinksData = {

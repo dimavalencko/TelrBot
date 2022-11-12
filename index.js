@@ -5,10 +5,11 @@ const Telr = require('./clients/telr');
 const moment = require('moment');
 
 const app = express();
-const urlencodedParser = express.urlencoded({extended: false}); // Data parser
+const xmlparser = require('express-xml-bodyparser'); // Для API GetTransaction https://secure.telr.com/tools/api/xml/transaction/030029586658
+app.use(xmlparser());
+
 const bot = new TelegramApi(dotenv.TELEGRAM_BOT_TOKEN, { polling: true });
 const telr = new Telr(dotenv.AUTH_KEY, dotenv.STORE_ID, dotenv.CREATE_QUICKLINK_API);
-const inputDataRgx = new RegExp("/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/",);
 
 // Bot logic
 bot.onText(/\/start/, async (msg) => {
@@ -28,23 +29,28 @@ bot.onText(/\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g, async (ms
     
     // For a negative payment amount
     if(+amount < 0){ 
-        return {error: 'The amount cannot be less than 0!'};
+      return await bot.sendMessage(chatId, 'Сумма платежа не может быть меньше 0!');
     }
     if(amount.includes(',')){
-        return {error: `The amount should be separated by a dot, not a comma (${amount.replace(',', '.')})`};
+      return await bot.sendMessage(chatId, `Указанная сумма должна быть разделена точкой, а не запятой (${amount.replace(',', '.')})`);
     }
 
     let qlData = await telr.createQuickLink([date, amount, name]);
     let opts = {'caption': qlData.url.replace('_', '\\_'), 'parse_mode': 'markdown'}; // The '_' character must be escaped, otherwise there will be an error
-	await bot.sendPhoto(chatId, qlData.qrCode, opts);
+	  await bot.sendPhoto(chatId, qlData.qrCode, opts);
 });
+
+
+// Endpoints
+app.get('/', urlencodedParser, (request, response) => {
+  response.send('Some text')
+})
+
+app.post('/', (request, response) => {
+    if(!request.body) return response.sendStatus(400);
+    console.log('Body: ', request.body);
+    response.send(`Some text ${request.body}`)
+})
 
 // Express server logic
 app.listen(dotenv.EXPRESS_PORT, async () => console.log(`App listening on port ${dotenv.EXPRESS_PORT}`))
-
-// Endpoints
-app.post('/', urlencodedParser, (req, res) => {
-    if(!request.body) return response.sendStatus(400);
-    res.send(`Some text ${req.body}`)
-})
-
