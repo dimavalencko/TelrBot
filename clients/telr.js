@@ -23,6 +23,7 @@ class Telr {
         qlData.QuickLinkRequest.Details.Desc = `${date} ${name}`;
         qlData.QuickLinkRequest.Details.Amount = amount;
         qlData.QuickLinkRequest.Details.FullName = name;
+        qlData.QuickLinkRequest.Details.FullName = name;
 
         try {
           const request = await axios.post(this.#qlApi, qlData);
