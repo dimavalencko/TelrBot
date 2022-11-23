@@ -1,14 +1,15 @@
 const TelegramApi = require('node-telegram-bot-api');
-const express = require('express');
+const express = require('express') 
+, bodyParser = require('body-parser');
 const dotenv = require('dotenv').config().parsed;
 const Telr = require('./clients/telr');
 const moment = require('moment');
 
 const app = express();
-const urlencodedParser = express.urlencoded({extended: false});
 const xmlparser = require('express-xml-bodyparser'); // Для API GetTransaction https://secure.telr.com/tools/api/xml/transaction/030029586658
 app.use(xmlparser());
-
+app.use(bodyParser.json());
+app.use(bodyParser.text({type:"*/*"}));
 const bot = new TelegramApi(dotenv.TELEGRAM_BOT_TOKEN, { polling: true });
 const telr = new Telr(dotenv.AUTH_KEY, dotenv.STORE_ID, dotenv.CREATE_QUICKLINK_API);
 const botName = dotenv.TELEGRAM_BOT_NAME;
@@ -48,14 +49,14 @@ bot.onText(RegExp(/\b\s\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g
 
 // Endpoints
 app.get('/', (request, response) => {
-  if(!request.body) return response.sendStatus(400);
-  console.log('Get request: ', request.body);
-  response.send(`Body - ${request.body}`)
+  if(!request.query) return response.sendStatus(400);
+  console.log('Get request: ', request.query);
+  response.send(`Body - ${request.query}`)
 })
 
-app.post('/', urlencodedParser, (request, response) => {
+app.post('/', (request, response) => {
   if(!request.body) return response.sendStatus(400);
-  console.log('Post request: ', request.body);
+  console.log('Post body: ', request.body);
   response.send(`Body - ${request.body}`)
 })
 
