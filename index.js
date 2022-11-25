@@ -51,13 +51,13 @@ bot.onText(RegExp(/\b\s\d{1,2}\.\d{1,2}\/[+-]?([0-9]*[.,])?[0-9]+\/[A-zА-я]+/g
 app.get('/', (request, response) => {
   if(!request.query) return response.sendStatus(400);
   console.log('Get request: ', request.query);
-  response.send(`Body - ${request.query}`)
+  response.send(`Get body - ${request.query}`);
 })
 
 app.post('/', (request, response) => {
   if(!request.body) return response.sendStatus(400);
   console.log('Post body: ', request.body);
-  response.send(`Body - ${request.body}`)
+  response.send(`post bodyody - ${request.body}`)
 })
 
 // Express server logic
